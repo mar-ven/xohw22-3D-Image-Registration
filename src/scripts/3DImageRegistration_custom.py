@@ -243,7 +243,12 @@ def main():
     parser.add_argument("-rp", "--res_path", nargs='?', help='Path of the Results', default='./')
     parser.add_argument("-c", "--config", nargs='?', help='hw config to print only', default='ok')
     parser.add_argument("-nc", "--n_couples", help="sets the positive number of couples of ref and flt passed, default 1", default='1', type=int)
+    parser.add_argument("-f", "--filename", help="sets the name of the output .csv file", default="output.csv")
     args = parser.parse_args()
+
+    with open(args.filename, 'w') as file:
+        file.write("n_couples, seed, output_mi, mean_time_hw, std_time_hw, mean_error, std_error, mean_time_sw, std_time_sw,\n")
+
     for seed in (1234, 0, 98562, 73541, 3478, 87632, 45638, 2134, 77899):
         for n_couples in range(1, args.n_couples):
             hist_dim = 256
@@ -288,7 +293,6 @@ def main():
             dim=image_dimension
             diffs=[]
             start_tot = time.time()
-            print('seed: %d, ncouples: %d' % (seed, n_couples))
             for i in range(iterations):
                 ref = np.random.randint(low=0, high=255, size = (n_couples*image_dimension, image_dimension), dtype='uint8')
                 if seed in (1234, 0, 98562):
@@ -323,9 +327,10 @@ def main():
             #    ratio = np.divide(time_sw, time_hw)
             #    software_file.write("%d, %d, %s, %s, %s, %s,\n" % (n_couples, seed, np.mean(time_sw), np.std(time_sw), np.mean(ratio), np.std(ratio)))
 
-            with open('data_4PE_512_float.csv', 'a') as file:
-                ratio = np.divide(time_sw, time_hw)
-                file.write("float, %d, %d, %s, %s, %s, %s, %s, %s,\n" % (n_couples, seed, np.mean(times), np.std(times), np.mean(diffs), np.std(diffs), np.mean(time_sw), np.std(time_sw)))
+            print('seed: %d, ncouples: %d, output: %f' % (seed, n_couples, out[0]))
+            
+            with open(args.filename, 'a') as file:
+                file.write("%d, %d, %f, %s, %s, %s, %s, %s, %s,\n" % (n_couples, seed, out[0], np.mean(times), np.std(times), np.mean(diffs), np.std(diffs), np.mean(time_sw), np.std(time_sw)))
 
             iron.free()
 
